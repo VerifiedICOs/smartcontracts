@@ -6,7 +6,7 @@ contract tokenRecipient {
 
 contract VICOToken {
 
-	string public name = 'VICO Voting Token';
+	string public name = 'VICO Vote Token';
     	string public symbol = 'VICO';
     	uint256 public decimals = 0;
     	uint256 public totalSupply = 100000000;
