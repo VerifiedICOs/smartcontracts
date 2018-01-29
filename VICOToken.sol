@@ -1,89 +1,47 @@
 pragma solidity ^0.4.19;
-
-contract Token {
-
-    function totalSupply() constant returns (uint256 supply) {}
-
-    function balanceOf(address _owner) constant returns (uint256 balance) {}
-
-    function transfer(address _to, uint256 _value) returns (bool success) {}
-
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {}
-
-    function approve(address _spender, uint256 _value) returns (bool success) {}
-
-    function allowance(address _owner, address _spender) constant returns (uint256 remaining) {}
-
-    event Transfer(address indexed _from, address indexed _to, uint256 _value);
-    event Approval(address indexed _owner, address indexed _spender, uint256 _value);
+contract tokenRecipient { 
     
-}
-
-contract StandardToken is Token {
-
-    function transfer(address _to, uint256 _value) returns (bool success) {
-        if (balances[msg.sender] >= _value && _value > 0) {
-            balances[msg.sender] -= _value;
-            balances[_to] += _value;
-            Transfer(msg.sender, _to, _value);
-            return true;
-        } else { return false; }
+    function receiveApproval (address _from, uint256 _value, address _token, bytes _extraData) public; 
     }
 
-    function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
-        if (balances[_from] >= _value && allowed[_from][msg.sender] >= _value && _value > 0) {
-            balances[_to] += _value;
-            balances[_from] -= _value;
-            allowed[_from][msg.sender] -= _value;
-            Transfer(_from, _to, _value);
-            return true;
-        } else { return false; }
+contract VICOToken {
+
+	string public name = 'VICO Voting Token';
+    	string public symbol = 'VICO';
+    	uint256 public decimals = 0;
+    	uint256 public totalSupply = 100000000;
+    	address public VicoOwner;
+        mapping (address => uint256) public balanceOf;
+        mapping (address => mapping (address => uint256)) public allowance;
+        event Transfer(address indexed from, address indexed to, uint256 value);
+
+    function VICOToken(address ownerAddress) public {
+        balanceOf[msg.sender] = totalSupply;
+        VicoOwner = ownerAddress;
     }
 
-    function balanceOf(address _owner) constant returns (uint256 balance) {
-        return balances[_owner];
-    }
-
-    function approve(address _spender, uint256 _value) returns (bool success) {
-        allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
+    function transfer(address _to, uint256 _value) public returns (bool success) {
+        require (_to != 0x0);                               
+        require (_value >0);
+        require (balanceOf[msg.sender] >= _value);           
+        require (balanceOf[_to] + _value > balanceOf[_to]); 
+        balanceOf[msg.sender] -= _value;                     
+        balanceOf[_to] += _value;                           
+        Transfer(msg.sender, _to, _value);                   
         return true;
     }
 
-    function allowance(address _owner, address _spender) constant returns (uint256 remaining) {
-      return allowed[_owner][_spender];
-    }
-
-    mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowed;
-    uint256 public totalSupply;
-}
-
-contract VICOToken is StandardToken {
-
-    function () {
-        throw;
-    }
-
-    string public name;
-    uint8 public decimals;
-    string public symbol;
-    string public version = '1.1';
-
-    function VICOToken(
-        ) {
-        balances[msg.sender] = 100000000;
-        totalSupply = 100000000;
-        name = "VICO Vote Token";
-        decimals = 0;
-        symbol = "VICO";
-    }
-
-    function approveAndCall(address _spender, uint256 _value, bytes _extraData) returns (bool success) {
-        allowed[msg.sender][_spender] = _value;
-        Approval(msg.sender, _spender, _value);
-
-        if(!_spender.call(bytes4(bytes32(sha3("receiveApproval(address,uint256,address,bytes)"))), msg.sender, _value, this, _extraData)) { throw; }
+    function transferFrom (address _from, address _to, uint256 _value) public returns (bool success) {
+        require (_to != 0x0);                             
+        require (_value >0);
+        require (balanceOf[_from] >= _value);
+        require (balanceOf[_to] + _value > balanceOf[_to]);
+        require (_value <= allowance[_from][msg.sender]);    
+        balanceOf[_from] -= _value;
+        balanceOf[_to] += _value; 
+        allowance[_from][msg.sender] -= _value;
+        Transfer(_from, _to, _value);
         return true;
     }
+
 }
