@@ -85,7 +85,7 @@ contract listing {
     
     function refund(address[] _to, uint256[] _value) public {
         require (msg.sender == admin);
-        require (_value.length==_to.length);
+        require (_value.length == _to.length);
         
         VICOToken vicoMintContract = VICOToken(vicoMintAddress);
 
